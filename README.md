@@ -2,6 +2,10 @@
 
 Kişisel bütçe/finans yönetimi mobil uygulaması (iOS + Android). Kordevo Soft tarafından geliştirilmektedir.
 
+> **Önemli:** Bu proje **ASCII karakterli bir yolda** bulunmalıdır (örn. `C:\dev\atlas-mobil-uygulama`).
+> Android Gradle, yolda Türkçe karakter (ü, ş, ı, ğ, ö, ç) varsa build'i reddeder. Proje başlangıçta
+> `OneDrive\Masaüstü\...` altındaydı ve bu nedenle taşındı — bkz. [mobile/README.md](./mobile/README.md).
+
 ## Proje Yapısı
 
 ```
