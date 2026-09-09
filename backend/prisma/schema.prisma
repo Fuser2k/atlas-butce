@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserTier {
+  FREE
+  PREMIUM
+}
+
+enum AccountType {
+  BANK
+  CREDIT_CARD
+  LOAN
+  OVERDRAFT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum RecurrenceType {
+  ONE_OFF
+  RECURRING
+}
+
+// Madde 5.2 — Kullanıcı Kayıt ve Hesap Yönetimi
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String?
+  tier         UserTier @default(FREE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  accounts          Account[]
+  transactions      Transaction[]
+  bills             Bill[]
+  savingGoals       SavingGoal[]
+  householdMembers  HouseholdMember[]
+  premiumSubscription PremiumSubscription?
+
+  @@map("users")
+}
+
+// Madde 5.5 — Banka, Kredi Kartı, Kredi ve KMH Yönetimi
+model Account {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  type          AccountType
+  name          String
+  bankName      String?
+  // Kredi kartı alanları
+  cardLimit         Decimal? @db.Decimal(14, 2)
+  currentDebt       Decimal? @db.Decimal(14, 2)
+  availableLimit    Decimal? @db.Decimal(14, 2)
+  statementDate     DateTime?
+  dueDate           DateTime?
+  minPaymentAmount  Decimal? @db.Decimal(14, 2)
+  fullPaymentAmount Decimal? @db.Decimal(14, 2)
+  // Kredi alanları
+  loanAmount        Decimal? @db.Decimal(14, 2)
+  monthlyInstallment Decimal? @db.Decimal(14, 2)
+  remainingDebt     Decimal? @db.Decimal(14, 2)
+  remainingInstallments Int?
+  // KMH / ek hesap alanları
+  overdraftLimit    Decimal? @db.Decimal(14, 2)
+  usedAmount        Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@map("accounts")
+}
+
+// Madde 5.4 — Gelir ve Gider Yönetimi
+model Transaction {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  accountId   String?
+  account     Account?        @relation(fields: [accountId], references: [id])
+  type        TransactionType
+  amount      Decimal         @db.Decimal(14, 2)
+  category    String
+  subCategory String?
+  description String?
+  date        DateTime
+  recurrence  RecurrenceType  @default(ONE_OFF)
+  householdMemberId String?
+  householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("transactions")
+}
+
+// Madde 5.6 / 5.7 — Faturalar, Sabit Ödemeler ve Ödeme Hatırlatıcıları
+model Bill {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  name            String
+  category        String
+  amount          Decimal  @db.Decimal(14, 2)
+  dueDate         DateTime
+  recurrencePeriod String? // örn. "monthly", "yearly"
+  isPaid          Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bills")
+}
+
+// Madde 5.9 — Birikim ve Finansal Hedef Yönetimi
+model SavingGoal {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  name             String
+  targetAmount     Decimal  @db.Decimal(14, 2)
+  currentAmount    Decimal  @db.Decimal(14, 2) @default(0)
+  targetDate       DateTime?
+  monthlyPlanAmount Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("saving_goals")
+}
+
+// Madde 5.8 — Hane Halkı Yönetimi
+model HouseholdMember {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  name   String
+
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+
+  @@map("household_members")
+}
+
+// Madde 5.16 — Premium Abonelik Sistemi
+model PremiumSubscription {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id])
+  store              String // "app_store" | "google_play"
+  originalTransactionId String?
+  isActive           Boolean   @default(false)
+  startedAt          DateTime?
+  expiresAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("premium_subscriptions")
+}

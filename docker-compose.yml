@@ -1,0 +1,60 @@
+# Hafta 1 kapsamı: Hetzner sunucusunda dev ve test ortamlarının izole çalışması için.
+# Production (müşteri domain'i ile) ayrıca ve müşteri onayıyla kurulacaktır (Sözleşme Madde 6).
+services:
+  postgres-dev:
+    image: postgres:17-alpine
+    container_name: atlas-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas_dev_password
+      POSTGRES_DB: atlas_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas_postgres_dev_data:/var/lib/postgresql/data
+
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: atlas-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas_test_password
+      POSTGRES_DB: atlas_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - atlas_postgres_test_data:/var/lib/postgresql/data
+
+  backend-dev:
+    build:
+      context: ./backend
+    container_name: atlas-backend-dev
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.dev
+    environment:
+      DATABASE_URL: postgresql://atlas:atlas_dev_password@postgres-dev:5432/atlas_dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres-dev
+
+  backend-test:
+    build:
+      context: ./backend
+    container_name: atlas-backend-test
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.test
+    environment:
+      DATABASE_URL: postgresql://atlas:atlas_test_password@postgres-test:5432/atlas_test
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres-test
+
+volumes:
+  atlas_postgres_dev_data:
+  atlas_postgres_test_data:
