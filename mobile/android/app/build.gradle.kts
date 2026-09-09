@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "com.kordevo.atlas.atlas_butce"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage 37 gerektiriyor; flutter.compileSdkVersion henüz güncellenmedi.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

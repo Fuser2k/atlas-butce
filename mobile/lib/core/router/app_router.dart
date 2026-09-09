@@ -2,14 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/auth_controller.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/transactions/presentation/transactions_screen.dart';
 import 'app_shell.dart';
 import 'placeholder_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authControllerProvider);
+
   return GoRouter(
     initialLocation: '/',
+    redirect: (context, state) {
+      // Oturum bilgisi cihazdan okunurken (ilk açılış) yönlendirme yapılmaz;
+      // main.dart bu sırada splash ekranı gösterir.
+      if (authState.isLoading) return null;
+
+      final isAuthenticated = authState.value?.isAuthenticated ?? false;
+      final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      if (!isAuthenticated && !isAuthRoute) return '/login';
+      if (isAuthenticated && isAuthRoute) return '/';
+      return null;
+    },
     routes: [
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       _shellRoute(
         route: '/',
         weekNote: 'Ana ekran — mobil⇄backend bağlantı testi bu haftanın kapsamında.',
@@ -18,6 +39,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _shellRoute(
         route: '/transactions',
         weekNote: 'Gelir/Gider yönetimi Hafta 2 kapsamında geliştirilecek (Madde 5.4).',
+        builder: (context, state) => const TransactionsScreen(),
       ),
       _shellRoute(
         route: '/accounts',
@@ -46,6 +68,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _shellRoute(
         route: '/settings',
         weekNote: 'Profil/Ayarlar Hafta 2 kapsamında geliştirilecek (Madde 5.2).',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );
