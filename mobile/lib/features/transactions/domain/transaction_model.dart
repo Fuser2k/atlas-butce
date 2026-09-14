@@ -1,5 +1,7 @@
 enum TransactionKind { income, expense }
 
+enum RecurrenceInterval { weekly, monthly }
+
 class TransactionModel {
   final String id;
   final TransactionKind type;
@@ -8,6 +10,7 @@ class TransactionModel {
   final String? subCategory;
   final String? description;
   final DateTime date;
+  final RecurrenceInterval? recurrenceInterval;
 
   const TransactionModel({
     required this.id,
@@ -17,7 +20,10 @@ class TransactionModel {
     this.subCategory,
     this.description,
     required this.date,
+    this.recurrenceInterval,
   });
+
+  bool get isRecurring => recurrenceInterval != null;
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
@@ -28,6 +34,11 @@ class TransactionModel {
       subCategory: json['subCategory'] as String?,
       description: json['description'] as String?,
       date: DateTime.parse(json['date'] as String),
+      recurrenceInterval: switch (json['recurrenceInterval'] as String?) {
+        'WEEKLY' => RecurrenceInterval.weekly,
+        'MONTHLY' => RecurrenceInterval.monthly,
+        _ => null,
+      },
     );
   }
 }

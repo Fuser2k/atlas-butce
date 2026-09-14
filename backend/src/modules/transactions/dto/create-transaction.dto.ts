@@ -1,4 +1,13 @@
-import { IsDateString, IsEnum, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 
 export enum TransactionTypeDto {
   INCOME = 'INCOME',
@@ -8,6 +17,11 @@ export enum TransactionTypeDto {
 export enum RecurrenceTypeDto {
   ONE_OFF = 'ONE_OFF',
   RECURRING = 'RECURRING',
+}
+
+export enum RecurrenceIntervalDto {
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
 }
 
 export class CreateTransactionDto {
@@ -38,4 +52,9 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsEnum(RecurrenceTypeDto)
   recurrence?: RecurrenceTypeDto;
+
+  // recurrence = RECURRING iken zorunlu; motorun periyodu hesaplayabilmesi için gerekli.
+  @ValidateIf((dto: CreateTransactionDto) => dto.recurrence === RecurrenceTypeDto.RECURRING)
+  @IsEnum(RecurrenceIntervalDto)
+  recurrenceInterval?: RecurrenceIntervalDto;
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import configuration from './config/configuration.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -30,6 +31,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
             : { target: 'pino-pretty' },
       },
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     HealthModule,
     AuthModule,

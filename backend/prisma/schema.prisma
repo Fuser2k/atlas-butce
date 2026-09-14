@@ -28,6 +28,11 @@ enum RecurrenceType {
   RECURRING
 }
 
+enum RecurrenceInterval {
+  WEEKLY
+  MONTHLY
+}
+
 // Madde 5.2 — Kullanıcı Kayıt ve Hesap Yönetimi
 model User {
   id           String   @id @default(uuid())
@@ -98,6 +103,11 @@ model Transaction {
   description String?
   date        DateTime
   recurrence  RecurrenceType  @default(ONE_OFF)
+  recurrenceInterval RecurrenceInterval?
+  nextOccurrenceDate DateTime?
+  recurrenceParentId String?
+  recurrenceParent   Transaction?  @relation("RecurrenceChain", fields: [recurrenceParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  recurrenceChildren Transaction[] @relation("RecurrenceChain")
   householdMemberId String?
   householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id])
 

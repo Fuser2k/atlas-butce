@@ -14,8 +14,11 @@ class TransactionsRepository {
 
   TransactionsRepository(this._dio);
 
-  Future<List<TransactionModel>> list() async {
-    final response = await _dio.get('/transactions');
+  Future<List<TransactionModel>> list({DateTime? from, DateTime? to}) async {
+    final response = await _dio.get('/transactions', queryParameters: {
+      if (from != null) 'from': from.toUtc().toIso8601String(),
+      if (to != null) 'to': to.toUtc().toIso8601String(),
+    });
     final items = response.data['data'] as List<dynamic>;
     return items.map((e) => TransactionModel.fromJson(e as Map<String, dynamic>)).toList();
   }
@@ -29,17 +32,64 @@ class TransactionsRepository {
     required TransactionKind type,
     required double amount,
     required String category,
+    String? subCategory,
     String? description,
     required DateTime date,
+    RecurrenceInterval? recurrenceInterval,
   }) async {
-    await _dio.post('/transactions', data: {
-      'type': type == TransactionKind.income ? 'INCOME' : 'EXPENSE',
-      'amount': amount,
-      'category': category,
-      if (description != null && description.isNotEmpty) 'description': description,
-      'date': date.toUtc().toIso8601String(),
-    });
+    await _dio.post('/transactions', data: _buildBody(
+      type: type,
+      amount: amount,
+      category: category,
+      subCategory: subCategory,
+      description: description,
+      date: date,
+      recurrenceInterval: recurrenceInterval,
+    ));
+  }
+
+  Future<void> update(
+    String id, {
+    required TransactionKind type,
+    required double amount,
+    required String category,
+    String? subCategory,
+    String? description,
+    required DateTime date,
+    RecurrenceInterval? recurrenceInterval,
+  }) async {
+    await _dio.patch('/transactions/$id', data: _buildBody(
+      type: type,
+      amount: amount,
+      category: category,
+      subCategory: subCategory,
+      description: description,
+      date: date,
+      recurrenceInterval: recurrenceInterval,
+    ));
   }
 
   Future<void> delete(String id) => _dio.delete('/transactions/$id');
+
+  Map<String, dynamic> _buildBody({
+    required TransactionKind type,
+    required double amount,
+    required String category,
+    String? subCategory,
+    String? description,
+    required DateTime date,
+    RecurrenceInterval? recurrenceInterval,
+  }) {
+    return {
+      'type': type == TransactionKind.income ? 'INCOME' : 'EXPENSE',
+      'amount': amount,
+      'category': category,
+      if (subCategory != null && subCategory.isNotEmpty) 'subCategory': subCategory,
+      if (description != null && description.isNotEmpty) 'description': description,
+      'date': date.toUtc().toIso8601String(),
+      'recurrence': recurrenceInterval != null ? 'RECURRING' : 'ONE_OFF',
+      if (recurrenceInterval != null)
+        'recurrenceInterval': recurrenceInterval == RecurrenceInterval.weekly ? 'WEEKLY' : 'MONTHLY',
+    };
+  }
 }
