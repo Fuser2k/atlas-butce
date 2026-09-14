@@ -64,6 +64,8 @@ model Account {
   type          AccountType
   name          String
   bankName      String?
+  // Banka hesabı alanı
+  balance       Decimal? @db.Decimal(14, 2)
   // Kredi kartı alanları
   cardLimit         Decimal? @db.Decimal(14, 2)
   currentDebt       Decimal? @db.Decimal(14, 2)
