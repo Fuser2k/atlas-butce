@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/presentation/auth_controller.dart';
+import '../../features/bills/presentation/bills_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -50,6 +51,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _shellRoute(
         route: '/bills',
         weekNote: 'Faturalar & Sabit Ödemeler Hafta 3 kapsamında geliştirilecek (Madde 5.6, 5.7).',
+        builder: (context, state) => const BillsScreen(),
       ),
       _shellRoute(
         route: '/household',
