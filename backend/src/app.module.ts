@@ -15,6 +15,8 @@ import { HouseholdModule } from './modules/household/household.module.js';
 import { PremiumModule } from './modules/premium/premium.module.js';
 import { PublicDebtModule } from './modules/public-debt/public-debt.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { AdminAuthModule } from './modules/admin-auth/admin-auth.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PremiumModule,
     PublicDebtModule,
     NotificationsModule,
+    AdminAuthModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

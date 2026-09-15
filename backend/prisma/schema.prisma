@@ -184,3 +184,23 @@ model PremiumSubscription {
 
   @@map("premium_subscriptions")
 }
+
+enum AdminRole {
+  SUPER_ADMIN
+  OPERATIONS
+  SUPPORT
+  FINANCE
+}
+
+// Admin Panel V0.1 — mobil User authentication sisteminden tamamen ayrı.
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(SUPER_ADMIN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
