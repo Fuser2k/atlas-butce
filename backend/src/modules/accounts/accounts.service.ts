@@ -123,8 +123,8 @@ export class AccountsService {
 
   // CREDIT_CARD için availableLimit her zaman sunucu tarafında hesaplanır — istemciden gelen değere güvenilmez.
   private toWriteData(dto: CreateAccountDto | UpdateAccountDto, existing?: { cardLimit: unknown; currentDebt: unknown }) {
-    const cardLimit = dto.cardLimit ?? (existing?.cardLimit !== undefined ? Number(existing.cardLimit) : undefined);
-    const currentDebt = dto.currentDebt ?? (existing?.currentDebt !== undefined ? Number(existing.currentDebt) : undefined);
+    const cardLimit = dto.cardLimit ?? (existing?.cardLimit != null ? Number(existing.cardLimit) : undefined);
+    const currentDebt = dto.currentDebt ?? (existing?.currentDebt != null ? Number(existing.currentDebt) : undefined);
     const availableLimit =
       cardLimit !== undefined ? Math.max(cardLimit - (currentDebt ?? 0), 0) : undefined;
 

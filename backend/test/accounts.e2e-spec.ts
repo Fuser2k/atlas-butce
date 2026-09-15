@@ -109,6 +109,21 @@ describe('Accounts (e2e)', () => {
     expect(updated.body.data.balance).toBe('250');
   });
 
+  it('keeps availableLimit null after updating a non-CREDIT_CARD account (regression)', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/accounts')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ type: 'LOAN', name: 'Regresyon Kredisi', loanAmount: 10000, remainingDebt: 9000 });
+    expect(created.body.data.availableLimit).toBeNull();
+
+    const updated = await request(app.getHttpServer())
+      .patch(`/accounts/${created.body.data.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ remainingDebt: 8000 })
+      .expect(200);
+    expect(updated.body.data.availableLimit).toBeNull();
+  });
+
   it('deletes own account', async () => {
     const created = await request(app.getHttpServer())
       .post('/accounts')
