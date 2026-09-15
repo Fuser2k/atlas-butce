@@ -37,7 +37,16 @@ class AppShell extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(currentDestination.label)),
+      appBar: AppBar(
+        title: Text(currentDestination.label),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Hatırlatmalar',
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
+      ),
       drawer: Drawer(
         child: SafeArea(
           child: ListView(

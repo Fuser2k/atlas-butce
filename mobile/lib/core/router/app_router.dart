@@ -8,6 +8,10 @@ import '../../features/bills/presentation/bills_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/household/presentation/household_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/premium/presentation/premium_screen.dart';
+import '../../features/savings/presentation/savings_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/transactions/presentation/transactions_screen.dart';
 import 'app_shell.dart';
@@ -33,6 +37,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       _shellRoute(
         route: '/',
         weekNote: 'Ana ekran — mobil⇄backend bağlantı testi bu haftanın kapsamında.',
@@ -56,18 +61,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _shellRoute(
         route: '/household',
         weekNote: 'Hane Halkı Yönetimi Hafta 4 kapsamında geliştirilecek (Madde 5.8).',
+        builder: (context, state) => const HouseholdScreen(),
       ),
       _shellRoute(
         route: '/savings',
         weekNote: 'Birikim/Hedef Yönetimi Hafta 4 kapsamında geliştirilecek (Madde 5.9).',
+        builder: (context, state) => const SavingsScreen(),
       ),
       _shellRoute(
         route: '/public-debt',
-        weekNote: 'Kamu Borç Takip Hafta 6 kapsamında geliştirilecek (Madde 5.14).',
+        weekNote: 'Kamu Borç Takip Hafta 6 kapsamında geliştirilecek (Madde 5.14). Bu alan şu an bir giriş/hazırlık ekranıdır.',
       ),
       _shellRoute(
         route: '/premium',
         weekNote: 'Premium Alanı Hafta 5-7 kapsamında geliştirilecek (Madde 5.11, 5.16).',
+        builder: (context, state) => const PremiumScreen(),
       ),
       _shellRoute(
         route: '/settings',

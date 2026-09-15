@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
 
+import '../../household/data/household_repository.dart';
 import '../data/transactions_repository.dart';
 import '../domain/transaction_model.dart';
 
@@ -35,6 +36,10 @@ final transactionsListProvider = FutureProvider.autoDispose((ref) {
 
 final transactionsSummaryProvider = FutureProvider.autoDispose((ref) {
   return ref.watch(transactionsRepositoryProvider).summary();
+});
+
+final householdMembersOptionsProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(householdRepositoryProvider).list();
 });
 
 class TransactionsScreen extends ConsumerWidget {
@@ -190,6 +195,7 @@ class _TransactionFormSheetState extends ConsumerState<_TransactionFormSheet> {
   late TransactionKind _type = widget.existing?.type ?? TransactionKind.expense;
   late DateTime _date = widget.existing?.date ?? DateTime.now();
   late RecurrenceInterval? _recurrenceInterval = widget.existing?.recurrenceInterval;
+  late String? _householdMemberId = widget.existing?.householdMemberId;
   bool _isSubmitting = false;
 
   bool get _isEditing => widget.existing != null;
@@ -224,6 +230,7 @@ class _TransactionFormSheetState extends ConsumerState<_TransactionFormSheet> {
           description: description,
           date: _date,
           recurrenceInterval: _recurrenceInterval,
+          householdMemberId: _householdMemberId,
         );
       } else {
         await repository.create(
@@ -234,6 +241,7 @@ class _TransactionFormSheetState extends ConsumerState<_TransactionFormSheet> {
           description: description,
           date: _date,
           recurrenceInterval: _recurrenceInterval,
+          householdMemberId: _householdMemberId,
         );
       }
 
@@ -342,6 +350,31 @@ class _TransactionFormSheetState extends ConsumerState<_TransactionFormSheet> {
                 onChanged: (value) => setState(() => _recurrenceInterval = value),
               ),
               const SizedBox(height: 16),
+              Consumer(
+                builder: (context, ref, _) {
+                  final members = ref.watch(householdMembersOptionsProvider);
+                  return members.when(
+                    data: (items) {
+                      if (items.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: DropdownButtonFormField<String?>(
+                          initialValue: _householdMemberId,
+                          decoration: const InputDecoration(labelText: 'Hane Üyesi (opsiyonel)'),
+                          items: [
+                            const DropdownMenuItem(value: null, child: Text('Seçilmedi')),
+                            for (final member in items)
+                              DropdownMenuItem(value: member.id, child: Text(member.name)),
+                          ],
+                          onChanged: (value) => setState(() => _householdMemberId = value),
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
+                  );
+                },
+              ),
               FilledButton(
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting

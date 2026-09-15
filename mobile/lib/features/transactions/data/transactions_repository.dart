@@ -28,6 +28,13 @@ class TransactionsRepository {
     return TransactionSummary.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 
+  Future<CategoryDistribution> distribution(TransactionKind type) async {
+    final response = await _dio.get('/transactions/distribution', queryParameters: {
+      'type': type == TransactionKind.income ? 'INCOME' : 'EXPENSE',
+    });
+    return CategoryDistribution.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
   Future<void> create({
     required TransactionKind type,
     required double amount,
@@ -36,6 +43,7 @@ class TransactionsRepository {
     String? description,
     required DateTime date,
     RecurrenceInterval? recurrenceInterval,
+    String? householdMemberId,
   }) async {
     await _dio.post('/transactions', data: _buildBody(
       type: type,
@@ -45,6 +53,7 @@ class TransactionsRepository {
       description: description,
       date: date,
       recurrenceInterval: recurrenceInterval,
+      householdMemberId: householdMemberId,
     ));
   }
 
@@ -57,6 +66,7 @@ class TransactionsRepository {
     String? description,
     required DateTime date,
     RecurrenceInterval? recurrenceInterval,
+    String? householdMemberId,
   }) async {
     await _dio.patch('/transactions/$id', data: _buildBody(
       type: type,
@@ -66,6 +76,7 @@ class TransactionsRepository {
       description: description,
       date: date,
       recurrenceInterval: recurrenceInterval,
+      householdMemberId: householdMemberId,
     ));
   }
 
@@ -79,17 +90,21 @@ class TransactionsRepository {
     String? description,
     required DateTime date,
     RecurrenceInterval? recurrenceInterval,
+    String? householdMemberId,
   }) {
-    return {
+    final body = <String, dynamic>{
       'type': type == TransactionKind.income ? 'INCOME' : 'EXPENSE',
       'amount': amount,
       'category': category,
-      if (subCategory != null && subCategory.isNotEmpty) 'subCategory': subCategory,
-      if (description != null && description.isNotEmpty) 'description': description,
       'date': date.toUtc().toIso8601String(),
       'recurrence': recurrenceInterval != null ? 'RECURRING' : 'ONE_OFF',
-      if (recurrenceInterval != null)
-        'recurrenceInterval': recurrenceInterval == RecurrenceInterval.weekly ? 'WEEKLY' : 'MONTHLY',
     };
+    if (subCategory != null && subCategory.isNotEmpty) body['subCategory'] = subCategory;
+    if (description != null && description.isNotEmpty) body['description'] = description;
+    if (recurrenceInterval != null) {
+      body['recurrenceInterval'] = recurrenceInterval == RecurrenceInterval.weekly ? 'WEEKLY' : 'MONTHLY';
+    }
+    if (householdMemberId != null) body['householdMemberId'] = householdMemberId;
+    return body;
   }
 }

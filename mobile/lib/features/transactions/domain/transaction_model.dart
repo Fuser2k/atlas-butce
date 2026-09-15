@@ -11,6 +11,7 @@ class TransactionModel {
   final String? description;
   final DateTime date;
   final RecurrenceInterval? recurrenceInterval;
+  final String? householdMemberId;
 
   const TransactionModel({
     required this.id,
@@ -21,6 +22,7 @@ class TransactionModel {
     this.description,
     required this.date,
     this.recurrenceInterval,
+    this.householdMemberId,
   });
 
   bool get isRecurring => recurrenceInterval != null;
@@ -39,6 +41,39 @@ class TransactionModel {
         'MONTHLY' => RecurrenceInterval.monthly,
         _ => null,
       },
+      householdMemberId: json['householdMemberId'] as String?,
+    );
+  }
+}
+
+class CategoryDistributionItem {
+  final String category;
+  final double amount;
+  final double percentage;
+
+  const CategoryDistributionItem({required this.category, required this.amount, required this.percentage});
+
+  factory CategoryDistributionItem.fromJson(Map<String, dynamic> json) {
+    return CategoryDistributionItem(
+      category: json['category'] as String,
+      amount: double.parse(json['amount'].toString()),
+      percentage: double.parse(json['percentage'].toString()),
+    );
+  }
+}
+
+class CategoryDistribution {
+  final double total;
+  final List<CategoryDistributionItem> items;
+
+  const CategoryDistribution({required this.total, required this.items});
+
+  factory CategoryDistribution.fromJson(Map<String, dynamic> json) {
+    return CategoryDistribution(
+      total: double.parse(json['total'].toString()),
+      items: (json['items'] as List<dynamic>)
+          .map((e) => CategoryDistributionItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
