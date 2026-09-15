@@ -25,6 +25,9 @@ export class AccountsService {
     if (dto.type === AccountTypeDto.LOAN) {
       this.assertRemainingDebtValid(dto.loanAmount, dto.remainingDebt);
     }
+    if (dto.type === AccountTypeDto.OVERDRAFT) {
+      this.assertOverdraftUsageValid(dto.overdraftLimit, dto.usedAmount);
+    }
 
     const account = await this.prisma.account.create({
       data: { ...this.toWriteData(dto), userId, type: dto.type, name: dto.name },
@@ -61,6 +64,12 @@ export class AccountsService {
       const loanAmount = dto.loanAmount ?? (existing.loanAmount ? Number(existing.loanAmount) : undefined);
       const remainingDebt = dto.remainingDebt ?? (existing.remainingDebt ? Number(existing.remainingDebt) : undefined);
       this.assertRemainingDebtValid(loanAmount, remainingDebt);
+    }
+    if (type === AccountTypeDto.OVERDRAFT) {
+      const overdraftLimit =
+        dto.overdraftLimit ?? (existing.overdraftLimit != null ? Number(existing.overdraftLimit) : undefined);
+      const usedAmount = dto.usedAmount ?? (existing.usedAmount != null ? Number(existing.usedAmount) : undefined);
+      this.assertOverdraftUsageValid(overdraftLimit, usedAmount);
     }
 
     const account = await this.prisma.account.update({
@@ -118,6 +127,15 @@ export class AccountsService {
     }
     if (loanAmount !== undefined && remainingDebt !== undefined && remainingDebt > loanAmount) {
       throw new BadRequestException('Kalan borç, kredi tutarından büyük olamaz.');
+    }
+  }
+
+  private assertOverdraftUsageValid(overdraftLimit?: number, usedAmount?: number) {
+    if (usedAmount !== undefined && usedAmount < 0) {
+      throw new BadRequestException('Kullanılan tutar negatif olamaz.');
+    }
+    if (overdraftLimit !== undefined && usedAmount !== undefined && usedAmount > overdraftLimit) {
+      throw new BadRequestException('Kullanılan tutar, KMH limitinden büyük olamaz.');
     }
   }
 

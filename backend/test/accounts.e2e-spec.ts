@@ -86,6 +86,28 @@ describe('Accounts (e2e)', () => {
     expect(res.body.data.remainingOverdraftLimit).toBe(3500);
   });
 
+  it('rejects OVERDRAFT with usedAmount greater than overdraftLimit', async () => {
+    await request(app.getHttpServer())
+      .post('/accounts')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ type: 'OVERDRAFT', name: 'Asiri Kullanim', overdraftLimit: 1000, usedAmount: 5000 })
+      .expect(400);
+  });
+
+  it('rejects OVERDRAFT update that pushes usedAmount above overdraftLimit', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/accounts')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ type: 'OVERDRAFT', name: 'KMH Guncelleme', overdraftLimit: 2000, usedAmount: 500 })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch(`/accounts/${created.body.data.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ usedAmount: 3000 })
+      .expect(400);
+  });
+
   it('lists only the current user accounts', async () => {
     const res = await request(app.getHttpServer())
       .get('/accounts')
