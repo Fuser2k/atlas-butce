@@ -19,6 +19,12 @@ final billsListProvider = FutureProvider.autoDispose((ref) {
   return filter == BillFilter.upcoming ? repository.upcoming() : repository.list();
 });
 
+/// Ana ekran özeti ve "yaklaşan ödemeler" kartı için, ekranın kendi filtre
+/// durumundan bağımsız sabit bir sağlayıcı.
+final billsUpcomingProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(billsRepositoryProvider).upcoming();
+});
+
 class BillsScreen extends ConsumerWidget {
   const BillsScreen({super.key});
 

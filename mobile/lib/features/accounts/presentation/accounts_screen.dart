@@ -11,6 +11,10 @@ final accountsListProvider = FutureProvider.autoDispose((ref) {
   return ref.watch(accountsRepositoryProvider).list();
 });
 
+final accountsSummaryProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(accountsRepositoryProvider).summary();
+});
+
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
 
