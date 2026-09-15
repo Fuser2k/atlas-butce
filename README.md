@@ -12,6 +12,7 @@ Kişisel bütçe/finans yönetimi mobil uygulaması (iOS + Android). Kordevo Sof
 atlas-mobil-uygulama/
   mobile/     # Flutter uygulaması (Riverpod + Clean Architecture)
   backend/    # NestJS backend (PostgreSQL + Prisma)
+  admin/      # Next.js yönetim paneli (mobil auth'tan bağımsız admin auth)
   docs/       # Teknik değerlendirme, risk listesi, fizibilite notları
 ```
 
@@ -19,7 +20,8 @@ atlas-mobil-uygulama/
 
 - **Backend:** Node.js + NestJS + PostgreSQL (Prisma ORM)
 - **Mobile:** Flutter, Riverpod + Clean Architecture
-- **Dev/Test Hosting:** Hetzner sunucusu (Docker); production müşterinin alacağı domain ile yapılandırılacak
+- **Admin Panel:** Next.js (App Router, TypeScript) — aynı backend'i kullanır, ayrı admin auth
+- **Dev/Test Hosting:** Bu makinede yerel Docker; gerçek sunucu deploy'u kapsam dışı (kullanıcı kararı)
 
 ## Haftalık Plan
 
@@ -55,9 +57,16 @@ npm run start:dev
 cd mobile
 flutter pub get
 flutter run
+
+# Admin Panel
+cd admin
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-Detaylar için [backend/README.md](./backend/README.md) ve [mobile/README.md](./mobile/README.md)'ye bakınız.
+Detaylar için [backend/README.md](./backend/README.md), [mobile/README.md](./mobile/README.md) ve
+[admin/README.md](./admin/README.md)'ye bakınız.
 
 ## Dokümantasyon
 
