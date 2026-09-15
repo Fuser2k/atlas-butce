@@ -4,17 +4,24 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
 import { QueryTransactionDto } from './dto/query-transaction.dto.js';
+import { HouseholdService } from '../household/household.service.js';
 
 // Madde 5.4 — Gelir ve Gider Yönetimi.
 @Injectable()
 export class TransactionsService {
   private readonly logger = new Logger(TransactionsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly householdService: HouseholdService,
+  ) {}
 
-  create(userId: string, dto: CreateTransactionDto) {
+  async create(userId: string, dto: CreateTransactionDto) {
     const date = new Date(dto.date);
     const isRecurring = dto.recurrence === 'RECURRING';
+    if (dto.householdMemberId) {
+      await this.householdService.assertOwnedMember(userId, dto.householdMemberId);
+    }
 
     return this.prisma.transaction.create({
       data: {
@@ -28,6 +35,7 @@ export class TransactionsService {
         recurrence: dto.recurrence ?? 'ONE_OFF',
         recurrenceInterval: isRecurring ? dto.recurrenceInterval : undefined,
         nextOccurrenceDate: isRecurring ? this.addInterval(date, dto.recurrenceInterval!) : undefined,
+        householdMemberId: dto.householdMemberId,
       },
     });
   }
@@ -60,6 +68,9 @@ export class TransactionsService {
 
   async update(userId: string, id: string, dto: UpdateTransactionDto) {
     const existing = await this.findOne(userId, id);
+    if (dto.householdMemberId) {
+      await this.householdService.assertOwnedMember(userId, dto.householdMemberId);
+    }
 
     const nextRecurrence = dto.recurrence ?? existing.recurrence;
     const nextInterval = dto.recurrenceInterval ?? existing.recurrenceInterval ?? undefined;
@@ -99,6 +110,34 @@ export class TransactionsService {
       totalExpense,
       availableBalance: totalIncome - totalExpense,
     };
+  }
+
+  // Madde 5.3 — Bu ayki gelir/gider kategorilerine göre dağılım (Dashboard V3).
+  async distribution(userId: string, type: 'INCOME' | 'EXPENSE') {
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+    const transactions = await this.prisma.transaction.findMany({
+      where: { userId, type, date: { gte: monthStart, lt: monthEnd } },
+      select: { category: true, amount: true },
+    });
+
+    const totalsByCategory = new Map<string, number>();
+    for (const t of transactions) {
+      totalsByCategory.set(t.category, (totalsByCategory.get(t.category) ?? 0) + Number(t.amount));
+    }
+    const total = [...totalsByCategory.values()].reduce((sum, v) => sum + v, 0);
+
+    const items = [...totalsByCategory.entries()]
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    return { type, total, items };
   }
 
   // Tekrar eden işlem motoru: her gün çalışır, periyodu dolmuş şablonlar için yeni "çocuk"

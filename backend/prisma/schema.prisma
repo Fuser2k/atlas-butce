@@ -33,6 +33,13 @@ enum RecurrenceInterval {
   MONTHLY
 }
 
+enum ReminderSourceType {
+  BILL
+  CREDIT_CARD
+  LOAN
+  OVERDRAFT
+}
+
 // Madde 5.2 — Kullanıcı Kayıt ve Hesap Yönetimi
 model User {
   id           String   @id @default(uuid())
@@ -52,6 +59,7 @@ model User {
   savingGoals       SavingGoal[]
   householdMembers  HouseholdMember[]
   premiumSubscription PremiumSubscription?
+  paymentReminders  PaymentReminder[]
 
   @@map("users")
 }
@@ -111,7 +119,7 @@ model Transaction {
   recurrenceParent   Transaction?  @relation("RecurrenceChain", fields: [recurrenceParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   recurrenceChildren Transaction[] @relation("RecurrenceChain")
   householdMemberId String?
-  householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id])
+  householdMember   HouseholdMember? @relation(fields: [householdMemberId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +191,26 @@ model PremiumSubscription {
   updatedAt DateTime @updatedAt
 
   @@map("premium_subscriptions")
+}
+
+// Madde 5.7 — Ödeme Hatırlatıcıları. sourceType+sourceId+scheduledAt kombinasyonu
+// aynı kaynak için tekrar hatırlatma üretilmesini (duplicate) engeller.
+model PaymentReminder {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id])
+  sourceType  ReminderSourceType
+  sourceId    String
+  title       String
+  body        String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  readAt      DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, sourceType, sourceId, scheduledAt])
+  @@map("payment_reminders")
 }
 
 enum AdminRole {

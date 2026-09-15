@@ -57,4 +57,9 @@ export class CreateTransactionDto {
   @ValidateIf((dto: CreateTransactionDto) => dto.recurrence === RecurrenceTypeDto.RECURRING)
   @IsEnum(RecurrenceIntervalDto)
   recurrenceInterval?: RecurrenceIntervalDto;
+
+  // Madde 5.8 — işlemi bir hane üyesine bağlama (opsiyonel).
+  @IsOptional()
+  @IsString()
+  householdMemberId?: string;
 }

@@ -33,6 +33,12 @@ export class TransactionsController {
     return this.transactionsService.summary(user.userId, query);
   }
 
+  // /transactions/:id ile çakışmaması için sabit rota önce tanımlanır.
+  @Get('distribution')
+  distribution(@CurrentUser() user: AuthenticatedUser, @Query('type') type: 'INCOME' | 'EXPENSE' = 'EXPENSE') {
+    return this.transactionsService.distribution(user.userId, type);
+  }
+
   @Get(':id')
   findOne(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.transactionsService.findOne(user.userId, id);
