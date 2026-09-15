@@ -17,6 +17,8 @@ import { PublicDebtModule } from './modules/public-debt/public-debt.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { AdminAuthModule } from './modules/admin-auth/admin-auth.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { PlanningModule } from './modules/planning/planning.module.js';
+import { BriefingModule } from './modules/briefing/briefing.module.js';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { AdminModule } from './modules/admin/admin.module.js';
     NotificationsModule,
     AdminAuthModule,
     AdminModule,
+    PlanningModule,
+    BriefingModule,
   ],
 })
 export class AppModule {}
